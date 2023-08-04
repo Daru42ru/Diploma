@@ -7,8 +7,8 @@ import org.apache.commons.dbutils.handlers.ScalarHandler;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-public class SQLHelper {
-    private SQLHelper() {}
+public class DBHelper {
+    private DBHelper() {}
     private static QueryRunner runner = new QueryRunner();
 
     private static String url = System.getProperty("db.url");

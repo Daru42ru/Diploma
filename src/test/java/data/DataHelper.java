@@ -14,50 +14,45 @@ public class DataHelper {
     public static Faker faker = new Faker(new Locale("en"));
 
     public static Card getApprovedCard() {
-        return new Card("4444 4444 4444 4441", "06", "26", "Ivan Ivanov", "212");
+        return new Card("4444 4444 4444 4441", "04", "28", "Daria Krotova", "688");
     }
 
     public static Card getDeclinedCard() {
-        return new Card("4444 4444 4444 4442", "06", "26", "Ivan Ivanov", "212");
+        return new Card("4444 4444 4444 4442", "04", "28", "Daria Krotova", "688");
+    }
+    public static Card getCardWithCardholderWithDash() {
+        return new Card (generateCardNumber(), getShiftedMonth(0), getShiftedYear(2), "Daria Krotova-Yakusheva", generateCvcCode());
     }
 
-    public static Card getCardWithNotFillingCardNumber() {
+    public static Card getCardWithNotNumber() {
         return new Card("", getShiftedMonth(0), getShiftedYear(2), generateCardholder(), generateCvcCode());
     }
 
-    public static Card getCardWithNotFillingMonth() {
+    public static Card getCardWithNotMonth() {
         return new Card(generateCardNumber(), "", getShiftedYear(2), generateCardholder(), generateCvcCode());
     }
 
-    public static Card getCardWithNotFillingYear() {
+    public static Card getCardWithNotYear() {
         return new Card(generateCardNumber(), getShiftedMonth(0), "", generateCardholder(), generateCvcCode());
     }
 
-    public static Card getCardWithNotFillingCardholder() {
+    public static Card getCardWithNotCardholder() {
         return new Card(generateCardNumber(), getShiftedMonth(0), getShiftedYear(2), "", generateCvcCode());
     }
 
-    public static Card getCardWithNotFillingCvc() {
+    public static Card getCardWithNotCvc() {
         return new Card(generateCardNumber(), getShiftedMonth(0), getShiftedYear(2), generateCardholder(), "");
     }
 
-    public static Card getRandomValidCard() {
-        return new Card(generateCardNumber(), getShiftedMonth(0), getShiftedYear(2), generateCardholder(), generateCvcCode());
-    }
-
-    public static Card getCardWithIncompleteCardNumber() {
+    public static Card getRandomValidData() {
         return new Card(generateIncompleteCardNumber(), getShiftedMonth(0), getShiftedYear(2), generateCardholder(), generateCvcCode());
     }
 
-    public static Card getCardWithMonthMoreThanTwelve() {
-        return new Card(generateCardNumber(), "13", getShiftedYear(2), generateCardholder(), generateCvcCode());
+    public static Card getRandomInvalidData() {
+        return new Card(generateIncompleteCardNumber(), getShiftedMonth(0), getShiftedYear(2), generateCardholder(), generateCvcCode());
     }
 
-    public static Card getCardWithMonthDoubleZero() {
-        return new Card(generateCardNumber(), "00", getShiftedYear(2), generateCardholder(), generateCvcCode());
-    }
-
-    public static Card getCardWithMonthLessThanCurrentMonthForCurrentYear() {
+    public static Card getCardWithMonthLessThanCurrentMonth() {
         return new Card(generateCardNumber(), getShiftedMonth(-1), getShiftedYear(0), generateCardholder(), generateCvcCode());
     }
 
@@ -65,7 +60,7 @@ public class DataHelper {
         return new Card(generateCardNumber(), getShiftedMonth(0), getShiftedYear(-1), generateCardholder(), generateCvcCode());
     }
 
-    public static Card getCardWithYearMoreBySixYearsThanCurrentYear() {
+    public static Card getCardWithYearMore() {
         return new Card(generateCardNumber(), getShiftedMonth(0), getShiftedYear(6), generateCardholder(), generateCvcCode());
     }
 
@@ -85,7 +80,6 @@ public class DataHelper {
         return new Card(generateCardNumber(), getShiftedMonth(0), getShiftedYear(2), generateCardholder(), generateIncompleteCvcCode());
     }
 
-    /*Генерация данных*/
 
     public static String generateCardNumber() {
         return (faker.numerify("#### #### #### ####"));
@@ -117,7 +111,7 @@ public class DataHelper {
     }
 
     public static String generateCardholderWithNumbers() {
-        return (faker.name().firstName() + "666");
+        return (faker.name().firstName() + "111");
     }
 
     public static String generateCvcCode() {

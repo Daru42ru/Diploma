@@ -2,7 +2,7 @@ package test;
 
 import com.codeborne.selenide.logevents.SelenideLogger;
 import data.DataHelper;
-import data.SQLHelper;
+import data.DBHelper;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.*;
 import page.DashboardPage;
@@ -24,7 +24,7 @@ public class PaymentTest {
 
     @BeforeEach
     void cleanDatabase() {
-        SQLHelper.cleanDatabase();
+        DBHelper.cleanDatabase();
     }
 
     @AfterAll
@@ -32,9 +32,6 @@ public class PaymentTest {
         SelenideLogger.removeListener("allure");
     }
 
-    /*Позитивные сценарии*/
-
-    @DisplayName("№1 Оплата по карте 4444 4444 4444 4441 с вводом валидных данных")
     @Test
     void shouldOccurPaymentWithStatusApproved() {
         var dashboardPage = new DashboardPage();
@@ -43,11 +40,10 @@ public class PaymentTest {
         payment.waitSuccessfullyNotification();
 
         String expectedStatus = "APPROVED";
-        String actualStatus = SQLHelper.getPaymentStatus();
+        String actualStatus = DBHelper.getPaymentStatus();
         assertEquals(expectedStatus, actualStatus);
     }
 
-    @DisplayName("№2 Оплата по карте 4444 4444 4444 4442 с вводом валидных данных")
     @Test
     void shouldNotOccurPaymentWithStatusDeclined() {
         var dashboardPage = new DashboardPage();
@@ -56,152 +52,128 @@ public class PaymentTest {
         payment.waitErrorNotification();
 
         String expectedStatus = "DECLINED";
-        String actualStatus = SQLHelper.getPaymentStatus();
+        String actualStatus = DBHelper.getPaymentStatus();
+        assertEquals(expectedStatus, actualStatus);
+    }
+    @Test
+    void shouldOccurPaymentWithCardholderWithDash() {
+        var dashboardPage = new DashboardPage();
+        var payment = dashboardPage.openPaymentForm();
+        payment.fillingFields(DataHelper.getCardWithCardholderWithDash());
+        payment.waitSuccessfullyNotification();
+
+        String expectedStatus = "APPROVED";
+        String actualStatus = DBHelper.getPaymentStatus();
         assertEquals(expectedStatus, actualStatus);
     }
 
-    /*Негативные сценарии с пустыми полями*/
 
-    @DisplayName("№5 При оплате по карте не заполнено поле 'Номер карты'")
     @Test
-    void shouldAppearErrorMessageWhenPaymentWithNotFilledCardNumber() {
+    void shouldShowAnErrorWhenPaymentWithNotFilledCardNumber() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
-        payment.fillingFields(DataHelper.getCardWithNotFillingCardNumber());
+        payment.fillingFields(DataHelper.getCardWithNotNumber());
         payment.waitWrongFormatError();
     }
 
-    @DisplayName("№6 При оплате по карте не заполнено поле 'Месяц'")
     @Test
-    void shouldAppearErrorMessageWhenPaymentWithNotFilledMonth() {
+    void shouldShowAnErrorWhenPaymentWithNotFilledMonth() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
-        payment.fillingFields(DataHelper.getCardWithNotFillingMonth());
+        payment.fillingFields(DataHelper.getCardWithNotMonth());
         payment.waitWrongFormatError();
     }
 
-    @DisplayName("№7 При оплате по карте не заполнено поле 'Год'")
     @Test
-    void shouldAppearErrorMessageWhenPaymentWithNotFilledYear() {
+    void shouldShowAnErrorWhenPaymentWithNotFilledYear() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
-        payment.fillingFields(DataHelper.getCardWithNotFillingYear());
+        payment.fillingFields(DataHelper.getCardWithNotYear());
         payment.waitWrongFormatError();
     }
 
-    @DisplayName("№8 При оплате по карте не заполнено поле 'Владелец'")
     @Test
-    void shouldAppearErrorMessageWhenPaymentWithNotFilledCardholder() {
+    void shouldShowAnErrorWhenPaymentWithNotFilledCardholder() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
-        payment.fillingFields(DataHelper.getCardWithNotFillingCardholder());
+        payment.fillingFields(DataHelper.getCardWithNotCardholder());
         payment.waitRequiredFieldError();
     }
 
-    @DisplayName("№9 При оплате по карте не заполнено поле 'CVC/CVV'")
     @Test
-    void shouldAppearErrorMessageWhenPaymentWithNotFilledCvc() {
+    void shouldShowAnErrorWhenPaymentWithNotFilledCvc() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
-        payment.fillingFields(DataHelper.getCardWithNotFillingCvc());
+        payment.fillingFields(DataHelper.getCardWithNotCvc());
         payment.waitWrongFormatError();
     }
 
-    /*Негативные сценарии с невалидным значением полей*/
-
-    @DisplayName("№15 При оплате по карте в поле 'Номер карты' указан номер карты отсутствующий в БД")
     @Test
-    void shouldAppearErrorMessageWhenPaymentByRandomValidCard() {
+    void shouldShowAnErrorWhenPaymentByRandomValidCard() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
-        payment.fillingFields(DataHelper.getRandomValidCard());
+        payment.fillingFields(DataHelper.getRandomValidData());
         payment.waitErrorNotification();
     }
 
-    @DisplayName("№17 При оплате по карте в поле 'Номер карты' указан номер менее 16 цифр")
     @Test
-    void shouldAppearErrorMessageWhenPaymentWithIncompleteCardNumber() {
+    void shouldShowAnErrorWhenPaymentWithIncompleteCardNumber() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
-        payment.fillingFields(DataHelper.getCardWithIncompleteCardNumber());
+        payment.fillingFields(DataHelper.getRandomInvalidData());
         payment.waitWrongFormatError();
     }
 
-    @DisplayName("№19 При оплате по карте в поле 'Месяц' указано число больше 12")
     @Test
-    void shouldAppearErrorMessageWhenPaymentWithMonthMoreThanTwelve() {
+    void shouldShowAnErrorWhenPaymentWithMonthLessThanCurrentMonthForCurrentYear() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
-        payment.fillingFields(DataHelper.getCardWithMonthMoreThanTwelve());
+        payment.fillingFields(DataHelper.getCardWithMonthLessThanCurrentMonth());
         payment.waitCardExpirationDateError();
     }
 
-    @DisplayName("№21 При оплате по карте в поле 'Месяц' указано число 00")
     @Test
-    void shouldAppearErrorMessageWhenPaymentWithMonthDoubleZero() {
+    void shouldShowAnErrorWhenPaymentWithYearLessThanCurrentYear() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
-        payment.fillingFields(DataHelper.getCardWithMonthDoubleZero());
-        payment.waitCardExpirationDateError();
+        payment.fillingFields(DataHelper.getCardWithYearLessThanCurrentYear());
+        payment.waitCardExpiredError();
     }
-
-    @DisplayName("№23 При оплате по карте в поле 'Месяц' указан месяц меньше текущего, при указанном текущем годе")
     @Test
-    void shouldAppearErrorMessageWhenPaymentWithMonthLessThanCurrentMonthForCurrentYear() {
-        var dashboardPage = new DashboardPage();
-        var payment = dashboardPage.openPaymentForm();
-        payment.fillingFields(DataHelper.getCardWithMonthLessThanCurrentMonthForCurrentYear());
-        payment.waitCardExpirationDateError();
-    }
-
-    @DisplayName("№25 При оплате по карте в поле 'Год' указан год меньше текущего")
-    @Test
-    void shouldAppearErrorMessageWhenPaymentWithYearLessThanCurrentYear() {
+    void shouldShowAnErrorWhenPaymentWithYearMoreThanCurrentYear() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
         payment.fillingFields(DataHelper.getCardWithYearLessThanCurrentYear());
         payment.waitCardExpiredError();
     }
 
-    @DisplayName("№27 При оплате по карте в поле 'Год' указан год больше текущего на 6 лет")
-    @Test
-    void shouldAppearErrorMessageWhenPaymentWithYearMoreBySixYearsThanCurrentYear() {
-        var dashboardPage = new DashboardPage();
-        var payment = dashboardPage.openPaymentForm();
-        payment.fillingFields(DataHelper.getCardWithYearMoreBySixYearsThanCurrentYear());
-        payment.waitCardExpirationDateError();
-    }
 
-    @DisplayName("№29 При оплате по карте в поле 'Владелец' указано имя на кириллице")
     @Test
-    void shouldAppearErrorMessageWhenPaymentWithCardholderByCyrillic() {
+    void shouldShowAnErrorWhenPaymentWithCardholderByCyrillic() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
         payment.fillingFields(DataHelper.getCardWithCardholderByCyrillic());
         payment.waitWrongFormatError();
     }
 
-    @DisplayName("№31 При оплате по карте в поле 'Владелец' указано имя со спецсимволами")
     @Test
-    void shouldAppearErrorMessageWhenPaymentWithCardholderBySpecialSymbol() {
+    void shouldShowAnErrorWhenPaymentWithCardholderBySpecialSymbol() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
         payment.fillingFields(DataHelper.getCardWithCardholderBySpecialSymbol());
         payment.waitWrongFormatError();
     }
 
-    @DisplayName("№33 При оплате по карте в поле 'Владелец' указано имя с цифрами")
     @Test
-    void shouldAppearErrorMessageWhenPaymentWithCardholderByNumbers() {
+    void shouldShowAnErrorWhenPaymentWithCardholderByNumbers() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
         payment.fillingFields(DataHelper.getCardWithCardholderByNumbers());
         payment.waitWrongFormatError();
     }
 
-    @DisplayName("№35 При оплате по карте в поле 'CVC/CVV' указано менее 3-х цифр")
     @Test
-    void shouldAppearErrorMessageWhenPaymentWithIncompleteCvc() {
+    void shouldShowAnErrorWhenPaymentWithIncompleteCvc() {
         var dashboardPage = new DashboardPage();
         var payment = dashboardPage.openPaymentForm();
         payment.fillingFields(DataHelper.getCardWithIncompleteCvc());

@@ -2,7 +2,7 @@ package test;
 
 import com.codeborne.selenide.logevents.SelenideLogger;
 import data.DataHelper;
-import data.SQLHelper;
+import data.DBHelper;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.*;
 import page.DashboardPage;
@@ -24,7 +24,7 @@ public class CreditTest {
 
     @BeforeEach
     void cleanDatabase() {
-        SQLHelper.cleanDatabase();
+        DBHelper.cleanDatabase();
     }
 
     @AfterAll
@@ -32,9 +32,7 @@ public class CreditTest {
         SelenideLogger.removeListener("allure");
     }
 
-    /*Позитивные сценарии*/
 
-    @DisplayName("№3 Купить в кредит по карте 4444 4444 4444 4441 с вводом валидных данных")
     @Test
     void shouldOccurCreditWithStatusApproved() {
         var dashboardPage = new DashboardPage();
@@ -43,11 +41,10 @@ public class CreditTest {
         credit.waitSuccessfullyNotification();
 
         String expectedStatus = "APPROVED";
-        String actualStatus = SQLHelper.getCreditStatus();
+        String actualStatus = DBHelper.getCreditStatus();
         assertEquals(expectedStatus, actualStatus);
     }
 
-    @DisplayName("№4 Купить в кредит по карте 4444 4444 4444 4442 с вводом валидных данных")
     @Test
     void shouldNotOccurCreditWithStatusDeclined() {
         var dashboardPage = new DashboardPage();
@@ -56,152 +53,127 @@ public class CreditTest {
         credit.waitErrorNotification();
 
         String expectedStatus = "DECLINED";
-        String actualStatus = SQLHelper.getCreditStatus();
+        String actualStatus = DBHelper.getCreditStatus();
+        assertEquals(expectedStatus, actualStatus);
+    }
+    @Test
+    void shouldOccurCreditWithCardholderWithDash() {
+        var dashboardPage = new DashboardPage();
+        var payment = dashboardPage.openPaymentForm();
+        payment.fillingFields(DataHelper.getCardWithCardholderWithDash());
+        payment.waitSuccessfullyNotification();
+
+        String expectedStatus = "APPROVED";
+        String actualStatus = DBHelper.getPaymentStatus();
         assertEquals(expectedStatus, actualStatus);
     }
 
-    /*Негативные сценарии с пустыми полями*/
-
-    @DisplayName("№10 При покупке в кредит не заполнено поле 'Номер карты'")
     @Test
-    void shouldAppearErrorMessageWhenCreditWithNotFilledCardNumber() {
+    void shouldShowAnErrorWhenCreditWithNotFilledCardNumber() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
-        credit.fillingFields(DataHelper.getCardWithNotFillingCardNumber());
+        credit.fillingFields(DataHelper.getCardWithNotNumber());
         credit.waitWrongFormatError();
     }
 
-    @DisplayName("№11 При покупке в кредит не заполнено поле 'Месяц'")
     @Test
-    void shouldAppearErrorMessageWhenCreditWithNotFilledMonth() {
+    void shouldShowAnErrorWhenCreditWithNotFilledMonth() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
-        credit.fillingFields(DataHelper.getCardWithNotFillingMonth());
+        credit.fillingFields(DataHelper.getCardWithNotMonth());
         credit.waitWrongFormatError();
     }
 
-    @DisplayName("№12 При покупке в кредит не заполнено поле 'Год'")
     @Test
-    void shouldAppearErrorMessageWhenCreditWithNotFilledYear() {
+    void shouldShowAnErrorWhenCreditWithNotFilledYear() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
-        credit.fillingFields(DataHelper.getCardWithNotFillingYear());
+        credit.fillingFields(DataHelper.getCardWithNotYear());
         credit.waitWrongFormatError();
     }
 
-    @DisplayName("№13 При покупке в кредит не заполнено поле 'Владелец'")
     @Test
-    void shouldAppearErrorMessageWhenCreditWithNotFilledCardholder() {
+    void shouldShowAnErrorWhenCreditWithNotFilledCardholder() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
-        credit.fillingFields(DataHelper.getCardWithNotFillingCardholder());
+        credit.fillingFields(DataHelper.getCardWithNotCardholder());
         credit.waitRequiredFieldError();
     }
 
-    @DisplayName("№14 При покупке в кредит не заполнено поле 'CVC/CVV'")
     @Test
-    void shouldAppearErrorMessageWhenCreditWithNotFilledCvc() {
+    void shouldShowAnErrorWhenCreditWithNotFilledCvc() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
-        credit.fillingFields(DataHelper.getCardWithNotFillingCvc());
+        credit.fillingFields(DataHelper.getCardWithNotCvc());
         credit.waitWrongFormatError();
     }
 
-    /*Негативные сценарии с невалидным значением полей*/
-
-    @DisplayName("№16 При покупке в кредит в поле 'Номер карты' указан номер карты отсутствующий в БД")
     @Test
-    void shouldAppearErrorMessageWhenCreditByRandomValidCard() {
+    void shouldShowAnErrorWhenCreditByRandomValidCard() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
-        credit.fillingFields(DataHelper.getRandomValidCard());
+        credit.fillingFields(DataHelper.getRandomValidData());
         credit.waitErrorNotification();
     }
 
-    @DisplayName("№18 При покупке в кредит в поле 'Номер карты' указан номер менее 16 цифр")
     @Test
-    void shouldAppearErrorMessageWhenCreditWithIncompleteCardNumber() {
+    void shouldShowAnErrorWhenCreditWithIncompleteCardNumber() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
-        credit.fillingFields(DataHelper.getCardWithIncompleteCardNumber());
+        credit.fillingFields(DataHelper.getRandomInvalidData());
         credit.waitWrongFormatError();
     }
 
-    @DisplayName("№20 При покупке в кредит в поле 'Месяц' указано число больше 12")
     @Test
-    void shouldAppearErrorMessageWhenCreditWithMonthMoreThanTwelve() {
+    void shouldShowAnErrorWhenCreditWithMonthLessThanCurrentMonthForCurrentYear() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
-        credit.fillingFields(DataHelper.getCardWithMonthMoreThanTwelve());
+        credit.fillingFields(DataHelper.getCardWithMonthLessThanCurrentMonth());
         credit.waitCardExpirationDateError();
     }
 
-    @DisplayName("№22 При покупке в кредит в поле 'Месяц' указано число больше 00")
     @Test
-    void shouldAppearErrorMessageWhenCreditWithMonthMoreDoubleZero() {
-        var dashboardPage = new DashboardPage();
-        var credit = dashboardPage.openCreditForm();
-        credit.fillingFields(DataHelper.getCardWithMonthDoubleZero());
-        credit.waitCardExpirationDateError();
-    }
-
-    @DisplayName("№24 При покупке в кредит в поле 'Месяц' указан месяц меньше текущего, при указанном текущем годе")
-    @Test
-    void shouldAppearErrorMessageWhenCreditWithMonthLessThanCurrentMonthForCurrentYear() {
-        var dashboardPage = new DashboardPage();
-        var credit = dashboardPage.openCreditForm();
-        credit.fillingFields(DataHelper.getCardWithMonthLessThanCurrentMonthForCurrentYear());
-        credit.waitCardExpirationDateError();
-    }
-
-    @DisplayName("№26 При покупке в кредит в поле 'Год' указан год меньше текущего")
-    @Test
-    void shouldAppearErrorMessageWhenCreditWithYearLessThanCurrentYear() {
+    void shouldShowAnErrorWhenCreditWithYearLessThanCurrentYear() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
         credit.fillingFields(DataHelper.getCardWithYearLessThanCurrentYear());
         credit.waitCardExpiredError();
     }
 
-    @DisplayName("№28 При покупке в кредит в поле 'Год' указан год больше текущего на 6 лет")
     @Test
-    void shouldAppearErrorMessageWhenCreditWithYearMoreBySixYearsThanCurrentYear() {
+    void shouldShowAnErrorWhenCreditWithYearMoreBySixYearsThanCurrentYear() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
-        credit.fillingFields(DataHelper.getCardWithYearMoreBySixYearsThanCurrentYear());
+        credit.fillingFields(DataHelper.getCardWithYearMore());
         credit.waitCardExpirationDateError();
     }
 
-    @DisplayName("№30 При покупке в кредит в поле 'Владелец' указано имя на кириллице")
     @Test
-    void shouldAppearErrorMessageWhenCreditWithCardholderByCyrillic() {
+    void shouldShowAnErrorWhenCreditWithCardholderByCyrillic() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
         credit.fillingFields(DataHelper.getCardWithCardholderByCyrillic());
         credit.waitWrongFormatError();
     }
 
-    @DisplayName("№32 При покупке в кредит в поле 'Владелец' указано имя со спецсимволами")
     @Test
-    void shouldAppearErrorMessageWhenCreditWithCardholderBySpecialSymbol() {
+    void shouldShowAnErrorWhenCreditWithCardholderBySpecialSymbol() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
         credit.fillingFields(DataHelper.getCardWithCardholderBySpecialSymbol());
         credit.waitWrongFormatError();
     }
 
-    @DisplayName("№34 При покупке в кредит в поле 'Владелец' указано имя с цифрами")
     @Test
-    void shouldAppearErrorMessageWhenCreditWithCardholderByNumbers() {
+    void shouldShowAnErrorWhenCreditWithCardholderByNumbers() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
         credit.fillingFields(DataHelper.getCardWithCardholderByNumbers());
         credit.waitWrongFormatError();
     }
 
-    @DisplayName("№36 При покупке в кредит в поле 'CVC/CVV' указано менее 3-х цифр")
     @Test
-    void shouldAppearErrorMessageWhenCreditWithIncompleteCvc() {
+    void shouldShowAnErrorWhenCreditWithIncompleteCvc() {
         var dashboardPage = new DashboardPage();
         var credit = dashboardPage.openCreditForm();
         credit.fillingFields(DataHelper.getCardWithIncompleteCvc());
